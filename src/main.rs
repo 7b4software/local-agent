@@ -28,6 +28,7 @@ async fn run_agent(args: &CommandLineArgs, config: &Config) -> Result<(), String
         .tool(CargoClippy)
         .tool(WriteFile)
         .default_max_turns(config.max_turns)
+        .max_tokens(config.max_tokens)
         .build();
 
     let answer = agent

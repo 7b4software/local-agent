@@ -43,10 +43,16 @@ pub struct Config {
     /// Max turns
     #[serde(default = "default_max_turns")]
     pub max_turns: usize,
+    #[serde(default = "default_tokens")]
+    pub max_tokens: u64,
 }
 
 fn default_max_turns() -> usize {
     16
+}
+
+fn default_tokens() -> u64 {
+    2048
 }
 
 impl Config {
