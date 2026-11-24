@@ -1,6 +1,6 @@
 use rig::{rig_tool, tool::ToolExecutionError};
 use std::{
-    io,
+    io::{self, Write},
     path::{Path, PathBuf},
 };
 use tokio::io::{AsyncBufReadExt, BufReader};
@@ -49,10 +49,10 @@ async fn call(args: String) -> Result<String, io::Error> {
     std::fs::read_to_string(file)
 }
 
-#[rig::rig_tool(description = "Read file")]
-pub async fn read_file(path: String) -> Result<String, ToolExecutionError> {
-    log::info!("read_file: {path}");
-    call(path).await.map_err(|error| {
+#[rig::rig_tool(description = "Read file", params(file = "File path"))]
+pub async fn read_file(file: String) -> Result<String, ToolExecutionError> {
+    log::info!("read_file: {file}");
+    call(file).await.map_err(|error| {
         log::error!("{error}");
         ToolExecutionError::other(format!("{error}"))
     })
@@ -92,6 +92,7 @@ pub async fn write_file(file: PathBuf, content: String) -> Result<(), ToolExecut
     }
     println!("{content}");
     print!("Write to: {file:?} (y/n): ");
+    std::io::stdout().flush();
     let mut reader = BufReader::new(tokio::io::stdin());
     let mut line = String::new();
     let _ = reader.read_line(&mut line).await.map_err(|error| {
@@ -99,7 +100,6 @@ pub async fn write_file(file: PathBuf, content: String) -> Result<(), ToolExecut
         ToolExecutionError::other(format!("{error}"))
     })?;
 
-    log::info!("=========== {line}");
     if line.starts_with('y') || line.starts_with('Y') {
         log::info!("Writing to file: {file:?}");
         std::fs::write(file, content).map_err(|error| {
