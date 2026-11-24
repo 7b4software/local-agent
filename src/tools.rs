@@ -87,18 +87,26 @@ pub async fn write_file(file: PathBuf, content: String) -> Result<(), ToolExecut
         ToolExecutionError::other(format!("{error}"))
     })?;
 
-    println!("Write to: {file:?} (y/n)");
+    if content.is_empty() {
+        return Err(ToolExecutionError::refused("empty"));
+    }
+    println!("{content}");
+    print!("Write to: {file:?} (y/n): ");
     let mut reader = BufReader::new(tokio::io::stdin());
     let mut line = String::new();
-
     let _ = reader.read_line(&mut line).await.map_err(|error| {
         log::error!("{error}");
         ToolExecutionError::other(format!("{error}"))
     })?;
+
+    log::info!("=========== {line}");
     if line.starts_with('y') || line.starts_with('Y') {
-        return Ok(());
+        log::info!("Writing to file: {file:?}");
+        std::fs::write(file, content).map_err(|error| {
+            log::error!("{error}");
+            ToolExecutionError::other("Write failed")
+        })
+    } else {
+        Err(ToolExecutionError::refused("user said no"))
     }
-    eprintln!("{content}");
-    Err(ToolExecutionError::cancelled("user denied write"))
-    // Ok(())
 }
