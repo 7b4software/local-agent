@@ -30,7 +30,7 @@ fn file_is_valid(file: &Path) -> Result<(), std::io::Error> {
 async fn call(args: String) -> Result<String, io::Error> {
     let file = Path::new(&args);
     file_is_valid(file)?;
-    let metadata = std::fs::metadata(&file)?;
+    let metadata = std::fs::metadata(file)?;
     if !metadata.is_file() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
@@ -51,7 +51,7 @@ async fn call(args: String) -> Result<String, io::Error> {
 
 #[rig::rig_tool(description = "Read file")]
 pub async fn read_file(path: String) -> Result<String, ToolExecutionError> {
-    eprintln!("read_file flalled: {path}");
+    eprintln!("read_file failed: {path}");
     call(path).await.map_err(|error| {
         log::error!("{error}");
         ToolExecutionError::other(format!("{error}"))
@@ -64,7 +64,7 @@ pub async fn cargo_clippy() -> Result<String, ToolExecutionError> {
     let res = tokio::process::Command::new("cargo")
         .arg("clippy")
         .arg("--")
-        .arg("-DWARNING")
+        .arg("-Dwarnings")
         .output()
         .await
         .map_err(|error| {
