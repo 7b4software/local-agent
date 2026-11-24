@@ -1,11 +1,11 @@
 mod command_line_args;
 mod config;
-mod readfile;
+mod tools;
 use command_line_args::CommandLineArgs;
 use config::Config;
 use rig::{AgentBuilder, providers::ollama::Ollama};
 
-use crate::readfile::{CargoClippy, ReadFile, WriteFile};
+use crate::tools::{CargoClippy, ReadFile, WriteFile};
 
 #[tokio::main]
 async fn run_main() -> Result<(), String> {
