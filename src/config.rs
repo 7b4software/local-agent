@@ -58,9 +58,9 @@ fn default_tokens() -> u64 {
 impl Config {
     pub fn from_file(path: impl AsRef<Path>) -> Result<Self, String> {
         let path = path.as_ref();
-        let content = std::fs::read_to_string(&path)
+        let content = std::fs::read_to_string(path)
             .map_err(|error| format!("Could not read {path:?} cause: {error}"))?;
-        Ok(toml::from_str(&content)
-            .map_err(|error| format!("Configuration fail {path:?} {error}"))?)
+        toml::from_str(&content)
+            .map_err(|error| format!("Configuration fail {path:?} {error}"))
     }
 }
