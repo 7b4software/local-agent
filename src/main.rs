@@ -62,7 +62,7 @@ async fn run_agent(args: &CommandLineArgs, config: &Config) -> Result<(), String
     }
 
     log::info!("tool calls: {}", answer.output_tool_calls());
-
+    log::info!("model turns: {}", answer.requests());
     let usage = MyUsage::from(&answer.usage());
 
     println!("{}", usage.to_string().truecolor(128, 128, 128));

@@ -86,7 +86,7 @@ pub async fn cargo_clippy() -> Result<String, ToolExecutionError> {
     params(file = "File path", content = "Content to write"),
     required(file, content)
 )]
-pub async fn write_file(file: PathBuf, content: String) -> Result<(), ToolExecutionError> {
+pub async fn write_file(file: PathBuf, content: String) -> Result<String, ToolExecutionError> {
     file_is_valid(&file).map_err(|error| {
         log::error!("{error}");
         ToolExecutionError::other(format!("{error}"))
@@ -110,8 +110,10 @@ pub async fn write_file(file: PathBuf, content: String) -> Result<(), ToolExecut
         std::fs::write(file, content).map_err(|error| {
             log::error!("{error}");
             ToolExecutionError::other("Write failed")
-        })
+        })?;
+        Ok(line)
     } else {
-        Err(ToolExecutionError::refused("user said no"))
+        // send back prompt
+        Ok(line)
     }
 }
