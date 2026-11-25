@@ -1,5 +1,6 @@
 mod command_line_args;
 mod config;
+mod my_usage;
 mod tools;
 
 use std::time::Instant;
@@ -10,7 +11,10 @@ use command_line_args::CommandLineArgs;
 use config::Config;
 use rig::{AgentBuilder, providers::ollama::Ollama};
 
-use crate::tools::{CargoClippy, ReadFile, WriteFile};
+use crate::{
+    my_usage::MyUsage,
+    tools::{CargoClippy, ReadFile, WriteFile},
+};
 
 #[tokio::main]
 async fn run_main() -> Result<(), String> {
@@ -42,19 +46,28 @@ async fn run_agent(args: &CommandLineArgs, config: &Config) -> Result<(), String
         .await
         .map_err(|error| format!("{error}"))?;
     let elapsed = start.elapsed().as_secs_f64();
+
     if let Some(tokens) = answer.usage.output_tokens {
         if elapsed > 0.0 {
+            let tokens_per_second = tokens as f64 / elapsed;
             log::info!(
-                "{tokens} output tokens in {elapsed:.2}s ({:.2} tokens/s)",
-                tokens as f64 / elapsed
+                "{tokens} output tokens in {elapsed:.2}s ({tokens_per_second:.2} tokens/s)",
+                tokens = tokens,
+                elapsed = elapsed,
+                tokens_per_second = tokens_per_second
             );
         }
     } else {
         log::error!("Output-token usage wasn't reported by the provider.");
     }
-    log::info!("tool calls {}", answer.output_tool_calls());
 
+    log::info!("tool calls: {}", answer.output_tool_calls());
+
+    let usage = MyUsage::from(&answer.usage());
+
+    println!("{}", usage.to_string().truecolor(128, 128, 128));
     println!("{}", answer.output().truecolor(51, 255, 0));
+
     Ok(())
 }
 

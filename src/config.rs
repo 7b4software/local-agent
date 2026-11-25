@@ -60,7 +60,6 @@ impl Config {
         let path = path.as_ref();
         let content = std::fs::read_to_string(path)
             .map_err(|error| format!("Could not read {path:?} cause: {error}"))?;
-        toml::from_str(&content)
-            .map_err(|error| format!("Configuration fail {path:?} {error}"))
+        toml::from_str(&content).map_err(|error| format!("Configuration fail {path:?} {error}"))
     }
 }
