@@ -1,6 +1,8 @@
 mod command_line_args;
 mod config;
 mod tools;
+use std::time::Instant;
+
 use command_line_args::CommandLineArgs;
 use config::Config;
 use rig::{AgentBuilder, providers::ollama::Ollama};
@@ -31,10 +33,22 @@ async fn run_agent(args: &CommandLineArgs, config: &Config) -> Result<(), String
         .max_tokens(config.max_tokens)
         .build();
 
+    let start = Instant::now();
     let answer = agent
         .prompt(&args.prompt)
         .await
         .map_err(|error| format!("{error}"))?;
+    let elapsed = start.elapsed().as_secs_f64();
+    if let Some(tokens) = answer.usage.output_tokens {
+        if elapsed > 0.0 {
+            log::info!(
+                "{tokens} output tokens in {elapsed:.2}s ({:.2} tokens/s)",
+                tokens as f64 / elapsed
+            );
+        }
+    } else {
+        log::error!("Output-token usage wasn't reported by the provider.");
+    }
     println!("{}", answer.output());
     Ok(())
 }
