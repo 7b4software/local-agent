@@ -1,7 +1,10 @@
 mod command_line_args;
 mod config;
 mod tools;
+
 use std::time::Instant;
+
+use colored::Colorize;
 
 use command_line_args::CommandLineArgs;
 use config::Config;
@@ -24,7 +27,7 @@ async fn run_main() -> Result<(), String> {
 async fn run_agent(args: &CommandLineArgs, config: &Config) -> Result<(), String> {
     let client = Ollama::new();
     let preamble = config.preamble.clone().unwrap_or_default();
-    let agent = AgentBuilder::new(client.completion(config.model.as_ref()))
+    let agent = AgentBuilder::new(client.native_completion(config.model.as_ref()))
         .preamble(preamble)
         .tool(ReadFile)
         .tool(CargoClippy)
@@ -49,7 +52,9 @@ async fn run_agent(args: &CommandLineArgs, config: &Config) -> Result<(), String
     } else {
         log::error!("Output-token usage wasn't reported by the provider.");
     }
-    println!("{}", answer.output());
+    log::info!("tool calls {}", answer.output_tool_calls());
+
+    println!("{}", answer.output().truecolor(51, 255, 0));
     Ok(())
 }
 
