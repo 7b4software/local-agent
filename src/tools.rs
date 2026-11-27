@@ -6,7 +6,6 @@ use std::{
 use tokio::io::{AsyncBufReadExt, BufReader};
 
 fn file_is_valid(file: &Path) -> Result<(), std::io::Error> {
-    log::info!("check allowed {:?}", file);
     if file.is_absolute() {
         return Err(io::Error::new(
             io::ErrorKind::PermissionDenied,
@@ -27,9 +26,11 @@ fn file_is_valid(file: &Path) -> Result<(), std::io::Error> {
     Ok(())
 }
 
-async fn call_read(args: String) -> Result<String, io::Error> {
-    let file = Path::new(&args);
+async fn call_read(args: impl AsRef<Path>) -> Result<String, io::Error> {
+    let file = args.as_ref();
     file_is_valid(file)?;
+
+    log::info!("Model got read permission to: {file:?}");
     let metadata = std::fs::metadata(file)?;
     if !metadata.is_file() {
         return Err(io::Error::new(
@@ -54,9 +55,8 @@ async fn call_read(args: String) -> Result<String, io::Error> {
     params(file = "File path")
 )]
 pub async fn read_file(file: String) -> Result<String, ToolExecutionError> {
-    log::info!("read_file: {file}");
-    call_read(file).await.map_err(|error| {
-        log::error!("{error}");
+    call_read(&file).await.map_err(|error| {
+        log::error!("failed: {file:?} cause: {error}");
         ToolExecutionError::other(format!("{error}"))
     })
 }

@@ -34,7 +34,7 @@ async fn run_agent(args: &CommandLineArgs, config: &Config) -> Result<(), String
     let agent = AgentBuilder::new(client.native_completion(config.model.as_ref()))
         .preamble(preamble)
         .tool(ReadFile)
-        .tool(CargoClippy)
+        //        .tool(CargoClippy)
         .tool(WriteFile)
         .default_max_turns(config.max_turns)
         .max_tokens(config.max_tokens)
